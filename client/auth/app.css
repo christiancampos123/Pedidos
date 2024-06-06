@@ -1,0 +1,47 @@
+body {
+  background-color: hsl(226, 63%, 45%);
+  margin: 0 auto;
+  width: 90%;
+}
+
+header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+}
+
+.crud {
+  display: flex;
+  gap: 5%;
+  justify-content: space-between;
+}
+
+.table {
+  flex: 1;
+}
+
+.form {
+  flex: 2;
+}
+
+/* imagenes */
+.images {
+  display: none;
+  flex: 2;
+}
+
+.background-block-active {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: grey;
+  opacity: 0.5;
+  z-index: 2;
+}
+
