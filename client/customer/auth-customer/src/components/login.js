@@ -14,7 +14,8 @@ class LoginComponent extends HTMLElement {
         /* Estilos del modal */
         .modal-login {
           display: flex;
-          width: 30%;
+          width: 90%; /* Ajuste de ancho para móviles */
+          max-width: 400px; /* Máximo ancho para evitar que se extienda demasiado */
           height: auto;
           flex-direction: column;
           align-items: center;
@@ -27,6 +28,7 @@ class LoginComponent extends HTMLElement {
           padding: 20px;
           border-radius: 5px;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          box-sizing: border-box; /* Asegura que el padding y el borde no aumenten el tamaño total */
         }
 
         .title {
@@ -37,11 +39,10 @@ class LoginComponent extends HTMLElement {
         /* Estilos para los campos del formulario */
         .form-input {
           margin-bottom: 10px;
-          width: 100%;
+          width: 90%;
           padding: 10px;
           border: 1px solid #ccc;
           border-radius: 5px;
-          box-sizing: border-box; /* Asegura que el padding y el borde no aumenten el tamaño total */
         }
 
         /* Estilos para el botón de enviar */
@@ -54,17 +55,38 @@ class LoginComponent extends HTMLElement {
           padding: 10px 20px;
           cursor: pointer;
           margin-bottom: 1.5rem;
+          width: 100%;
         }
 
         /* Estilos para el enlace de olvidé mi contraseña */
         .forgot-password {
           margin-top: 2rem;
           text-align: center;
-          margin-top: 10px;
+        }
+
+        /* Media query para dispositivos móviles */
+        @media (max-width: 600px) {
+          .modal-login {
+            width: 95%;
+            padding: 15px;
+          }
+
+          .title {
+            font-size: 1.5rem;
+          }
+
+          .form-submit {
+            padding: 10px;
+            margin-top: 2rem;
+          }
+
+          .forgot-password {
+            margin-top: 1rem;
+          }
         }
       </style>
       <div class="modal-login">
-        <div class="title">LOGIN</div>
+        <div class="title">LOGIN CLIENTE</div>
         <form id="login-form">
           <input type="text" name="email" class="form-input" placeholder="email">
           <input type="password" name="password" class="form-input" placeholder="Contraseña">

@@ -21,8 +21,11 @@ class PageComponent extends HTMLElement {
 
   async getTemplate (path) {
     const routes = {
-      '/cliente/login': 'login.html',
-      '/cliente/login/reset': 'reset.html'
+      '/cliente': 'home.html',
+      '/cliente/pedidos': 'pedidos.html',
+      '/cliente/resumen': 'resumen.html',
+      '/cliente/pedidoexitoso': 'exito.html',
+      '/cliente/pedidosanteriores': 'pedidosAnteriores.html'
     }
 
     const filename = routes[path] || '404.html'
@@ -35,7 +38,18 @@ class PageComponent extends HTMLElement {
     const html = await response.text()
 
     document.startViewTransition(() => {
-      this.shadowRoot.innerHTML = html
+      this.shadowRoot.innerHTML = `
+        <style>
+          .order-component {
+            display: none;
+          }
+          .summary-component {
+            display: none;
+
+          }
+        </style>
+        ${html}
+      `
       document.documentElement.scrollTop = 0
     })
   }

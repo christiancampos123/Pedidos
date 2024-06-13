@@ -1,0 +1,20 @@
+<div class="background-block"></div>
+<header>
+  <title-component title="Customers"></title-component>
+  <menu-component></menu-component>
+</header>
+<main>
+  <modal-destroy-component></modal-destroy-component>
+  <filter-modal></filter-modal>
+  <knm-component></knm-component>
+  <div class="crud">
+    <section class="table">
+      <table-records-component-customers endpoint="/api/admin/customers"></table-records-component-customers>
+    </section>
+    <section class="form">
+      <form-component-customers endpoint="/api/admin/customers"></form-component-customers>
+    </section>
+    <modal-notification-component></modal-notification-component>
+  </div>
+</main>
+<modal-gallery-component></modal-gallery-component>

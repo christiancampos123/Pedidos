@@ -1,7 +1,9 @@
 body {
   background-color: hsl(226, 63%, 45%);
   margin: 0 auto;
-  width: 90%;
+  width: 100%;
+  font-family: arial, helvetica, sans-serif;
+  color: white;
 }
 
 header {
@@ -19,6 +21,14 @@ header {
 
 .table {
   flex: 1;
+}
+
+.order-component{
+
+}
+
+.summary-component{
+  display: none;
 }
 
 .form {

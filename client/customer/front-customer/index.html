@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <!-- Esta línea para la codificación de carácteres -->
@@ -22,26 +22,9 @@
 </head>
 
 <body>
-  <div class="background-block"></div>
-  <header>
-    <title-component title="Customers"></title-component>
-    <menu-component></menu-component>
-  </header>
-  <main>
-    <modal-destroy-component></modal-destroy-component>
-    <filter-modal></filter-modal>
-    <knm-component></knm-component>
-    <div class="crud">
-      <section class="table">
-        <table-records-component-customers endpoint="/api/admin/customers"></table-records-component-customers>
-      </section>
-      <section class="form">
-        <form-component-customers endpoint="/api/admin/customers"></form-component-customers>
-      </section>
-      <modal-notification-component></modal-notification-component>
-    </div>
-  </main>
-  <modal-gallery-component></modal-gallery-component>
+    <font-loader-component></font-loader-component>
+    <!-- <font-loader-component></font-loader-component> -->
+    <page-component base-path="/cliente"></page-component>
 </body>
 
 </html>
