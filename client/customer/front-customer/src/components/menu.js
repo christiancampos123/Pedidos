@@ -12,6 +12,7 @@ class MenuComponent extends HTMLElement {
     this.shadow.innerHTML = `
       <style>
         .menu {
+          margin-top:5rem;
           display: flex;
           flex-direction: column;
           align-items: center;

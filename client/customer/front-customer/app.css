@@ -23,14 +23,6 @@ header {
   flex: 1;
 }
 
-.order-component{
-
-}
-
-.summary-component{
-  display: none;
-}
-
 .form {
   flex: 2;
 }

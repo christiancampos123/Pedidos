@@ -30,7 +30,7 @@ class PreviousOrdersComponent extends HTMLElement {
       .container {
         width: 90%;
         max-width: 600px;
-        margin: 20px auto;
+        margin: 5rem auto;
       }
 
       .search-input {

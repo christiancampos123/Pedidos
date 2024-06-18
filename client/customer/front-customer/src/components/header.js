@@ -16,6 +16,9 @@ class MobileHeader extends HTMLElement {
     this.shadow.innerHTML = `
       <style>
         .header {
+          position:fixed;
+          top:0;
+          z-index:100;
           display: flex;
           justify-content: space-between;
           align-items: center;

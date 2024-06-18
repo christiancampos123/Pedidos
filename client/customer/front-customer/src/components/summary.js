@@ -1,123 +1,37 @@
+import isEqual from 'lodash-es/isEqual'
+import { store } from '../redux/store.js'
+import { updateCart } from './../redux/cart-slice'
+
 class ProductSummaryComponent extends HTMLElement {
   constructor () {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
-    this.products = [
-      {
-        title: 'Producto 1',
-        price: 10,
-        units: 5,
-        weight: 500,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 2',
-        price: 20,
-        units: 3,
-        weight: 1000,
-        unit: 'g'
-      },
-      {
-        title: 'Producto 3',
-        price: 15,
-        units: 2,
-        weight: 750,
-        unit: 'g'
-      }
-    ]
+    this.products = []
   }
 
   connectedCallback () {
+    this.unsubscribe = store.subscribe(() => {
+      const currentState = store.getState()
+
+      if (!isEqual(currentState.cart.cartProducts, this.products)) {
+        this.products = currentState.cart.cartProducts
+        this.updateCart(this.products)
+      }
+
+      if (currentState.cart.cartProducts.length === 0) {
+        this.shadow.querySelector('.view-order-button').classList.remove('active')
+      } else {
+        this.shadow.querySelector('.view-order-button').classList.add('active')
+      }
+    })
     this.render()
   }
 
-  render () {
+  updateCart (products) {
+    const summaryContainer = this.shadow.querySelector('.summary')
+
     // Clear previous content
-    this.shadow.innerHTML = `
-<style>
-
-      .summary {
-        width: 95%;
-        margin-left: 2.5%;
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-sizing: border-box;
-      }
-      .summary-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .summary-item {
-        margin-bottom: 10px;
-      }
-      .summary-item span {
-        font-weight: bold;
-      }
-      .total {
-        margin-top: 20px;
-        font-size: 1.25rem;
-        font-weight: bold;
-      }
-      .do-order-button {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 75%;
-        padding: 15px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 25px;
-        font-size: 1rem;
-        text-align: center;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-    `
-
-    // Summary container
-    const summaryContainer = document.createElement('div')
-    summaryContainer.className = 'summary'
-    this.shadow.appendChild(summaryContainer)
+    summaryContainer.innerHTML = ''
 
     // Title
     const summaryTitle = document.createElement('div')
@@ -126,36 +40,187 @@ class ProductSummaryComponent extends HTMLElement {
     summaryContainer.appendChild(summaryTitle)
 
     // Product details
-    this.products.forEach(product => {
+    products.forEach(product => {
       const productDiv = document.createElement('div')
       productDiv.className = 'summary-item'
       productDiv.innerHTML = `
-        <span>${product.title}</span>: ${product.price}€ x ${product.units} (${product.weight} ${product.unit})
+        <span>${product.name}</span>: ${product.price}€ x ${product.quantity} (${product.weight} ${product.unit})
       `
       summaryContainer.appendChild(productDiv)
     })
 
     // Total calculation
-    const total = this.products.reduce((acc, product) => acc + product.price * product.units, 0)
+    const total = products.reduce((acc, product) => acc + product.price * product.quantity, 0)
 
     // Total element
     const totalElement = document.createElement('div')
     totalElement.className = 'total'
     totalElement.textContent = `Total: ${total}€`
     summaryContainer.appendChild(totalElement)
+  }
 
-    // hacer pedido
+  render () {
+    // Clear previous content
+    this.shadow.innerHTML = `
+      <style>
+        .summary {
+          position: fixed;
+          top: 4rem;
+          width: 95%;
+          margin-left: 2.5%;
+          margin-top: 20px;
+          padding: 20px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          box-sizing: border-box;
+          margin-bottom: 8rem;
+          overflow: hidden;
+          transition: transform 0.3s ease-out;
+          transform: translateX(120%);
+        }
+        .summary-title {
+          font-size: 1.5rem;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .summary-item {
+          margin-bottom: 10px;
+        }
+        .summary-item span {
+          font-weight: bold;
+        }
+        .total {
+          margin-top: 20px;
+          font-size: 1.25rem;
+          font-weight: bold;
+        }
+        .do-order-button {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 55%;
+          padding: 15px;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 25px;
+          font-size: 1rem;
+          text-align: center;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .view-order-button {
+          z-index: 10;
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 55%;
+          padding: 15px;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 25px;
+          font-size: 1rem;
+          text-align: center;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .arrow-button-container {
+          position: fixed;
+          bottom: 23px;
+          left: 20px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+        }
+        .arrow-button {
+          background-color: rgba(255, 255, 255, 0.8);
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .arrow-button span {
+          padding-right: 5px;
+          font-size: 1.5rem;
+          color: #007bff;
+        }
+        .visible {
+          transform: translateX(0%);
+        }
+        .hide {
+          display: none;
+        }
+      </style>
+    `
+
+    // Contenedor del botón de flecha
+    const arrowButtonContainer = document.createElement('div')
+    arrowButtonContainer.className = 'arrow-button-container hide'
+    this.shadow.appendChild(arrowButtonContainer)
+
+    // Botón de flecha
+    const arrowButton = document.createElement('button')
+    arrowButton.className = 'arrow-button'
+    arrowButton.innerHTML = '<span>&#x25C0;</span>'
+    arrowButtonContainer.appendChild(arrowButton)
+
+    // Summary container
+    const summaryContainer = document.createElement('div')
+    summaryContainer.className = 'summary'
+    this.shadow.appendChild(summaryContainer)
+
+    // Inicializar el contenido del carrito
+    this.updateCart(this.products)
+
+    // View Order button
     const viewOrderButton = document.createElement('button')
-    viewOrderButton.className = 'do-order-button'
-    viewOrderButton.textContent = 'Hacer Pedido'
-
+    viewOrderButton.className = 'view-order-button'
+    viewOrderButton.textContent = 'Ver Pedido'
     this.shadow.appendChild(viewOrderButton)
 
-    const doOrder = this.shadow.querySelector('.do-order-button')
+    // Hacer pedido
+    const doOrderButton = document.createElement('button')
+    doOrderButton.className = 'do-order-button'
+    doOrderButton.textContent = 'Hacer Pedido'
+    this.shadow.appendChild(doOrderButton)
 
+    const doOrder = this.shadow.querySelector('.do-order-button')
     doOrder.addEventListener('click', () => {
       window.location.href = '/cliente/pedidoexitoso'
     })
+
+    const viewOrder = this.shadow.querySelector('.view-order-button')
+    viewOrder.addEventListener('click', () => {
+      summaryContainer.classList.add('visible')
+      this.shadow.querySelector('.view-order-button').classList.add('hide')
+      this.shadow.querySelector('.arrow-button-container').classList.remove('hide')
+
+      const event = new CustomEvent('go-summary')
+      document.dispatchEvent(event)
+    })
+
+    arrowButton.addEventListener('click', () => {
+      this.shadow.querySelector('.view-order-button').classList.remove('hide')
+      this.shadow.querySelector('.arrow-button-container').classList.add('hide')
+      this.shadow.querySelector('.summary').classList.remove('visible')
+
+      const event = new CustomEvent('go-products')
+      document.dispatchEvent(event)
+    })
+  }
+
+  disconnectedCallback () {
+    if (this.unsubscribe) {
+      this.unsubscribe()
+    }
   }
 }
 

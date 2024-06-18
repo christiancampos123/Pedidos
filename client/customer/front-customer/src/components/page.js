@@ -7,7 +7,10 @@ class PageComponent extends HTMLElement {
 
   connectedCallback () {
     this.render()
-    window.onpopstate = () => this.handleRouteChange()
+
+    window.onpopstate = () => {
+      this.handleRouteChange()
+    }
   }
 
   handleRouteChange () {
@@ -38,18 +41,7 @@ class PageComponent extends HTMLElement {
     const html = await response.text()
 
     document.startViewTransition(() => {
-      this.shadowRoot.innerHTML = `
-        <style>
-          .order-component {
-            display: none;
-          }
-          .summary-component {
-            display: none;
-
-          }
-        </style>
-        ${html}
-      `
+      this.shadowRoot.innerHTML = html
       document.documentElement.scrollTop = 0
     })
   }

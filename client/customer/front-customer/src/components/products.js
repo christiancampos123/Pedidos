@@ -12,8 +12,7 @@ class ProductListComponent extends HTMLElement {
         price: '10',
         units: 5,
         weight: '500',
-        unit: 'g',
-        quantity: 0
+        unit: 'g'
       },
       {
         id: 2,
@@ -21,8 +20,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 3,
@@ -30,8 +28,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 4,
@@ -39,8 +36,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 5,
@@ -48,8 +44,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 6,
@@ -57,8 +52,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 7,
@@ -66,8 +60,7 @@ class ProductListComponent extends HTMLElement {
         price: '20',
         units: 3,
         weight: '1',
-        unit: 'kg',
-        quantity: 0
+        unit: 'kg'
       },
       {
         id: 8,
@@ -75,10 +68,9 @@ class ProductListComponent extends HTMLElement {
         price: '15',
         units: 2,
         weight: '750',
-        unit: 'g',
-        quantity: 0
+        unit: 'g'
       }
-    ]
+    ].map(product => ({ ...product, quantity: 0 }))
   }
 
   connectedCallback () {
@@ -88,19 +80,15 @@ class ProductListComponent extends HTMLElement {
   render () {
     this.shadow.innerHTML = `
       <style>
-        .order-component{
-
-        }
-        .summary-component{
-          display: none;
-        }
         .products {
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          margin-top: 20px; /* Margin top to move the component down */
+          margin-top: 3rem; /* Margin top to move the component down */
           margin-bottom: 80px; /* Space for the fixed button */
+          transition: transform 0.3s ease-out;
+          transform: translateX(0%);
         }
         .product {
           display: flex;
@@ -158,7 +146,7 @@ class ProductListComponent extends HTMLElement {
           bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
-          width: 75%;
+          width: 55%;
           padding: 15px;
           background-color: #007bff;
           color: #fff;
@@ -169,9 +157,27 @@ class ProductListComponent extends HTMLElement {
           cursor: pointer;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        .hide{
+          display:none;
+        }
+
+        .invisible {
+          transform: translateX(-120%);
+        }
       </style>
     `
+    document.addEventListener('go-summary', (event) => {
+      const container = this.shadow.querySelector('.products')
+      container.classList.add('invisible')
+      // Aquí puedes realizar acciones adicionales en respuesta al evento
+    })
 
+    document.addEventListener('go-products', (event) => {
+      const container = this.shadow.querySelector('.products')
+      container.classList.remove('invisible')
+      // Aquí puedes realizar acciones adicionales en respuesta al evento
+    })
     // Products container
     const productsContainer = document.createElement('div')
     productsContainer.className = 'products'
@@ -250,29 +256,26 @@ class ProductListComponent extends HTMLElement {
             product.quantity--
             const quantitySpan = productDiv.querySelector('.quantity-span')
             quantitySpan.textContent = product.quantity
-            store.dispatch(updateCart({ id: product.id, quantity: product.quantity }))
+            store.dispatch(updateCart({ id: product.id, quantity: product.quantity, name: product.title, unit: product.unit, units: product.units, price: product.price, weight: product.weight }))
           }
         } else if (event.target.classList.contains('increase')) {
           product.quantity++
           const quantitySpan = productDiv.querySelector('.quantity-span')
           quantitySpan.textContent = product.quantity
-          store.dispatch(updateCart({ id: product.id, quantity: product.quantity }))
+          store.dispatch(updateCart({ id: product.id, quantity: product.quantity, name: product.title, unit: product.unit, units: product.units, price: product.price, weight: product.weight }))
         }
       }
+      console.log(store.getState())
     })
 
-    // View Order button
-    const viewOrderButton = document.createElement('button')
-    viewOrderButton.className = 'view-order-button'
-    viewOrderButton.textContent = 'Ver Pedido'
+    // // View Order button
+    // const viewOrderButton = document.createElement('button')
+    // viewOrderButton.className = 'view-order-button'
+    // viewOrderButton.textContent = 'Ver Pedido'
 
-    this.shadow.appendChild(viewOrderButton)
+    // this.shadow.appendChild(viewOrderButton)
 
-    const viewOrder = this.shadow.querySelector('.view-order-button')
-
-    viewOrder.addEventListener('click', () => {
-      window.location.href = '/cliente/resumen'
-    })
+    // const viewOrder = this.shadow.querySelector('.view-order-button')
   }
 }
 
