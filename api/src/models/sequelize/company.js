@@ -2,34 +2,43 @@ module.exports = function (sequelize, DataTypes) {
   const Company = sequelize.define('Company', {
     id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       autoIncrement: true,
+      primaryKey: true,
       allowNull: false
     },
-    countryId: {
-      type: DataTypes.INTEGER,
+    commercialAddress: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isInt: {
-          msg: 'Please provide a valid country ID.'
+        notNull: {
+          msg: 'Por favor, rellena el campo "Dirección Commercial".'
+        },
+        notEmpty: {
+          msg: 'Por favor, rellena el campo "Dirección Commercial".'
         }
       }
     },
-    cityId: {
-      type: DataTypes.INTEGER,
+    fiscalAddress: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isInt: {
-          msg: 'Please provide a valid city ID.'
+        notNull: {
+          msg: 'Por favor, rellena el campo "Dirección Fiscal".'
+        },
+        notEmpty: {
+          msg: 'Por favor, rellena el campo "Dirección Fiscal".'
         }
       }
     },
-    dialCodeId: {
-      type: DataTypes.INTEGER,
+    commercialName: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isInt: {
-          msg: 'Please provide a valid dial code ID.'
+        notNull: {
+          msg: 'Por favor, rellena el campo "Nombre Commercial".'
+        },
+        notEmpty: {
+          msg: 'Por favor, rellena el campo "Nombre Commercial".'
         }
       }
     },
@@ -37,74 +46,23 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        notNull: {
+          msg: 'Por favor, rellena el campo "Nombre Fiscal".'
+        },
         notEmpty: {
-          msg: 'Please provide a fiscal name.'
+          msg: 'Por favor, rellena el campo "Nombre Fiscal".'
         }
       }
     },
-    comercialName: {
+    vatNumber: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        notNull: {
+          msg: 'Por favor, rellena el campo "NIF".'
+        },
         notEmpty: {
-          msg: 'Please provide a commercial name.'
-        }
-      }
-    },
-    vat: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'Please provide a VAT number.'
-        }
-      }
-    },
-    comercialAddress: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    fiscalAddress: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'Please provide a fiscal address.'
-        }
-      }
-    },
-    postalCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'Please provide a postal code.'
-        }
-      }
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: {
-          msg: 'Please provide a valid email address.'
-        }
-      }
-    },
-    web: {
-      type: DataTypes.STRING,
-      validate: {
-        isUrl: {
-          msg: 'Please provide a valid URL for the website.'
-        }
-      }
-    },
-    telephone: {
-      type: DataTypes.STRING,
-      validate: {
-        isNumeric: {
-          msg: 'Please provide a valid telephone number.'
+          msg: 'Por favor, rellena el campo "NIF".'
         }
       }
     },
@@ -137,38 +95,12 @@ module.exports = function (sequelize, DataTypes) {
         fields: [
           { name: 'id' }
         ]
-      },
-      {
-        name: 'companies_countryId_fk',
-        unique: true,
-        using: 'BTREE',
-        fields: [
-          { name: 'countryId' }
-        ]
-      },
-      {
-        name: 'companies_cityId_fk',
-        unique: true,
-        using: 'BTREE',
-        fields: [
-          { name: 'cityId' }
-        ]
-      },
-      {
-        name: 'companies_dialCodeId_fk',
-        unique: true,
-        using: 'BTREE',
-        fields: [
-          { name: 'dialCodeId' }
-        ]
       }
     ]
   })
 
   Company.associate = function (models) {
-    Company.belongsTo(models.Country, { as: 'country', foreignKey: 'countryId' })
-    Company.belongsTo(models.City, { as: 'city', foreignKey: 'cityId' })
-    Company.belongsTo(models.DialCode, { as: 'dialCode', foreignKey: 'dialCodeId' })
+
   }
 
   return Company

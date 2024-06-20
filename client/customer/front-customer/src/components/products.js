@@ -2,82 +2,25 @@ import store from '../redux/store'
 import { updateCart } from './../redux/cart-slice'
 
 class ProductListComponent extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
-    this.products = [
-      {
-        id: 1,
-        title: 'Producto 1',
-        price: '10',
-        units: 5,
-        weight: '500',
-        unit: 'g'
-      },
-      {
-        id: 2,
-        title: 'Producto 2',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 3,
-        title: 'Producto 3',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 4,
-        title: 'Producto 4',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 5,
-        title: 'Producto 5',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 6,
-        title: 'Producto 6',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 7,
-        title: 'Producto 7',
-        price: '20',
-        units: 3,
-        weight: '1',
-        unit: 'kg'
-      },
-      {
-        id: 8,
-        title: 'Producto 8',
-        price: '15',
-        units: 2,
-        weight: '750',
-        unit: 'g'
-      }
-    ].map(product => ({ ...product, quantity: 0 }))
+    this.products = []
+    // this.products = [
+    // ].map(product => ({ ...product, quantity: 0 }))
   }
 
-  connectedCallback () {
-    this.render()
+  connectedCallback() {
+    this.loadData().then(() => this.render());
   }
 
-  render () {
+  async loadData() {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`);
+    this.products = await response.json();
+    this.products = this.products.map(product => ({ ...product, quantity: 0 }));
+  }
+
+  render() {
     this.shadow.innerHTML = `
       <style>
         .products {
@@ -193,11 +136,11 @@ class ProductListComponent extends HTMLElement {
 
       const productTitle = document.createElement('div')
       productTitle.className = 'product-title'
-      productTitle.textContent = product.title
+      productTitle.textContent = product.name
 
       const productPrice = document.createElement('div')
       productPrice.className = 'product-price'
-      productPrice.textContent = product.price
+      productPrice.textContent = product.price.basePrice
 
       productHeader.appendChild(productTitle)
       productHeader.appendChild(productPrice)
@@ -210,12 +153,8 @@ class ProductListComponent extends HTMLElement {
       productDetails.appendChild(unitsSpan)
 
       const weightSpan = document.createElement('span')
-      weightSpan.textContent = `Peso: ${product.weight} ${product.unit}`
+      weightSpan.textContent = `Peso: ${product.measurement} ${product.measurementUnit}`
       productDetails.appendChild(weightSpan)
-
-      const unitSpan = document.createElement('span')
-      unitSpan.textContent = `Unidad de medida: ${product.unit}`
-      productDetails.appendChild(unitSpan)
 
       const quantityControl = document.createElement('div')
       quantityControl.className = 'quantity-control'
@@ -256,14 +195,28 @@ class ProductListComponent extends HTMLElement {
             product.quantity--
             const quantitySpan = productDiv.querySelector('.quantity-span')
             quantitySpan.textContent = product.quantity
-            store.dispatch(updateCart({ id: product.id, quantity: product.quantity, name: product.title, unit: product.unit, units: product.units, price: product.price, weight: product.weight }))
-          }
+            store.dispatch(updateCart({
+              id: product.id,
+              quantity: product.quantity,
+              name: product.name,
+              unit: product.unit,  // Asegúrate de que estas propiedades existan en tu objeto de producto
+              units: product.units,
+              price: product.price.basePrice,  // Ajusta según la estructura de tu objeto de producto
+              weight: `${product.measurement} ${product.measurementUnit}`,  // Igualmente, ajusta según tu estructura
+            }));          }
         } else if (event.target.classList.contains('increase')) {
           product.quantity++
           const quantitySpan = productDiv.querySelector('.quantity-span')
           quantitySpan.textContent = product.quantity
-          store.dispatch(updateCart({ id: product.id, quantity: product.quantity, name: product.title, unit: product.unit, units: product.units, price: product.price, weight: product.weight }))
-        }
+          store.dispatch(updateCart({
+            id: product.id,
+            quantity: product.quantity,
+            name: product.name,
+            unit: product.unit,  // Asegúrate de que estas propiedades existan en tu objeto de producto
+            units: product.units,
+            price: product.price.basePrice,  // Ajusta según la estructura de tu objeto de producto
+            weight: `${product.measurement} ${product.measurementUnit}`,  // Igualmente, ajusta según tu estructura
+          }));        }
       }
       console.log(store.getState())
     })

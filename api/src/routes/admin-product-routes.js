@@ -1,6 +1,7 @@
 module.exports = (app, upload) => {
   const router = require('express').Router()
   const controller = require('../controllers/admin/product-controller.js')
+  // const authCookie = require('../middlewares/auth-cookie.js')
 
   router.post('/', controller.create)
   router.get('/', controller.findAll)
@@ -8,5 +9,5 @@ module.exports = (app, upload) => {
   router.put('/:id', controller.update)
   router.delete('/:id', controller.delete)
 
-  app.use('/api/admin/products', router)
+  app.use('/api/admin/product', router)
 }

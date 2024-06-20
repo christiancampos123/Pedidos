@@ -1,14 +1,23 @@
 const sequelizeDb = require('../../models/sequelize')
-
 const Company = sequelizeDb.Company
+const Op = sequelizeDb.Sequelize.Op
 
 exports.create = (req, res) => {
-  Company.create(req.body).then(data => {
+  console.log(req.body)
+  console.log('next')
+  Company.create(req.body).then(async data => {
+    // req.redisClient.publish('new-company', JSON.stringify(data))
     res.status(200).send(data)
   }).catch(err => {
-    res.status(500).send({
-      message: err.errors || 'Algún error ha surgido al insertar el dato.'
-    })
+    if (err.errors) {
+      res.status(422).send({
+        message: err.errors
+      })
+    } else {
+      res.status(500).send({
+        message: 'Algún error ha surgido al insertar el dato.'
+      })
+    }
   })
 }
 
@@ -16,9 +25,19 @@ exports.findAll = (req, res) => {
   const page = req.query.page || 1
   const limit = parseInt(req.query.size) || 10
   const offset = (page - 1) * limit
+  const whereStatement = {}
+
+  for (const key in req.query) {
+    if (req.query[key] !== '' && req.query[key] !== 'null' && key !== 'page' && key !== 'size') {
+      whereStatement[key] = { [Op.substring]: req.query[key] }
+    }
+  }
+
+  const condition = Object.keys(whereStatement).length > 0 ? { [Op.and]: [whereStatement] } : {}
 
   Company.findAndCountAll({
-    attributes: ['id', 'fiscalname', 'comercialName', 'vat', 'comercialAddress', 'fiscalAddress', 'postalCode', 'email', 'web', 'telephone', 'createdAt', 'deletedAt'],
+    where: condition,
+    attributes: ['id', 'commercialAddress', 'fiscalAddress', 'commercialName', 'fiscalName', 'vatNumber', 'createdAt', 'updatedAt'],
     limit,
     offset,
     order: [['createdAt', 'DESC']]
@@ -27,7 +46,8 @@ exports.findAll = (req, res) => {
       result.meta = {
         total: result.count,
         pages: Math.ceil(result.count / limit),
-        currentPage: page
+        currentPage: page,
+        size: limit
       }
 
       res.status(200).send(result)
@@ -50,7 +70,6 @@ exports.findOne = (req, res) => {
       })
     }
   }).catch(_ => {
-    console.log(_)
     res.status(500).send({
       message: 'Algún error ha surgido al recuperar la id=' + id
     })
@@ -74,7 +93,7 @@ exports.update = (req, res) => {
     }
   }).catch(_ => {
     res.status(500).send({
-      message: 'Algún error ha surgido al actualizar la id=' + id
+      message: 'Algún error ha surgido al actualiazar la id=' + id
     })
   })
 }

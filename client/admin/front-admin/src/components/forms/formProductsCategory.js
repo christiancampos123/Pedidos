@@ -1,5 +1,4 @@
-import { store } from '../redux/store.js'
-import { removeImages, showImages } from '../redux/images-slice.js'
+import { store } from '../../redux/store.js'
 
 class Form extends HTMLElement {
   constructor () {
@@ -93,7 +92,6 @@ p {
     display: flex;
     height: 100%;
     width: 100%;
-
 }
 
 .tab{
@@ -242,14 +240,11 @@ ul{
 
         </style>
 <div class="form">
-  <form class="faq-form">
+  <form class="base-form">
     <div class="form-top-bar">
       <div class="tabs">
         <div class="tab active" data-tab="general">
             General
-        </div>
-        <div class="tab" data-tab="images">
-            Imágenes
         </div>
       </div>
       <div class="form-buttons">
@@ -290,115 +285,10 @@ ul{
           </div>
       </div>
 
-
-        <div class="form-language-bar">
-          <div class="tabs">
-  
-              <div class="tab active" data-tab="es">
-                  ES
-              </div>
-              <div class="tab" data-tab="en">
-                  EN
-              </div>
-  
-          </div>
-        </div>
-  
-  
-          <div class="tab-contents">
-            <div class="tab-content active" data-tab="es">
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="title">
-                      Pregunta
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <input type="text" name="locales.es.question" value="">
-                  </div>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="description">
-                      Respuesta
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <textarea name="locales.es.answer" type="textarea" class="event-description" data-onlyletters="true"></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-content" data-tab="en">
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="title">
-                      Question
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <input type="text" name="locales.en.question" value="">
-                  </div>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="description">
-                      Answer
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <textarea name="locales.en.answer" type="textarea" class="event-description" data-onlyletters="true"></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
       </div>
 
-      <!-- image Gallery -->
-      <div class="tab-content" data-tab="images">
-      <upload-image-component name="featureImage" image-configuration='{
-        "xs": {
-          "widthPx": "60",
-          "heightPx": "60"
-        },
-        "sm": {
-          "widthPx": "120",
-          "heightPx": "120"
-        },
-        "md": {
-          "widthPx": "240",
-          "heightPx": "240"
-        },
-        "lg": {
-          "widthPx": "480",
-          "heightPx": "480"
-        }
-      }' type="single"> </upload-image-component>
-      <upload-image-component name="feature-imag" image-configuration='{
-        "xs": {
-          "widthPx": "60",
-          "heightPx": "60"
-        },
-        "sm": {
-          "widthPx": "120",
-          "heightPx": "120"
-        },
-        "md": {
-          "widthPx": "240",
-          "heightPx": "240"
-        },
-        "lg": {
-          "widthPx": "480",
-          "heightPx": "480"
-        }
-      }' type="multiple"> </upload-image-component>
+      
       </div>
     </div>
   </form>
@@ -417,11 +307,10 @@ ul{
       }
       // Si el evento se origina dentro del botón de guardar
       if (event.target.closest('.store-button')) {
-        const form = this.shadow.querySelector('.faq-form')
+        const form = this.shadow.querySelector('.base-form')
         const formData = new FormData(form)
 
         const formDataJson = {}
-        formDataJson.images = store.getState().images.selectedImages
 
         for (const [key, value] of formData.entries()) {
           if (key.includes('locales')) {
@@ -450,6 +339,7 @@ ul{
         }
 
         const endpoint = formDataJson.id ? `${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}/${formDataJson.id}` : `${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`
+        console.log(endpoint)
         const method = formDataJson.id ? 'PUT' : 'POST'
         delete formDataJson.id
 
@@ -496,7 +386,6 @@ ul{
         }
 
         document.dispatchEvent(new CustomEvent('refresh-table-records'))
-        store.dispatch(removeImages())
         this.render()
       }
 
@@ -510,8 +399,6 @@ ul{
             color: 'red'
           }
         })
-        // TODO limpiar imagenes
-        store.dispatch(removeImages())
         document.dispatchEvent(broomNotificationEvent)
       }
 
@@ -541,9 +428,7 @@ ul{
       if (typeof value === 'object' && value !== null && currentKey.includes('locales')) {
         this.showElement(value, currentKey)
       }
-      if (typeof value === 'object' && value !== null && currentKey.includes('images')) {
-        store.dispatch(showImages(value))
-      } else {
+ else {
         this.paintRecord(value, currentKey)
       }
     })
@@ -574,4 +459,4 @@ ul{
   }
 }
 
-customElements.define('form-component', Form)
+customElements.define('form-component-products-category', Form)

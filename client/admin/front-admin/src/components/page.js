@@ -22,8 +22,10 @@ class PageComponent extends HTMLElement {
   async getTemplate (path) {
     const routes = {
       '/admin/usuarios': 'users.html',
-      '/admin/faqs': 'faqs.html',
-      '/admin/clientes': 'customers.html'
+      '/admin/empresas': 'company.html',
+      '/admin/clientes': 'customers.html',
+      '/admin/products-category': 'products-category.html',
+      '/admin/productos': "products.html"
 
     }
 

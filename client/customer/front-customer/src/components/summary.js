@@ -44,7 +44,7 @@ class ProductSummaryComponent extends HTMLElement {
       const productDiv = document.createElement('div')
       productDiv.className = 'summary-item'
       productDiv.innerHTML = `
-        <span>${product.name}</span>: ${product.price}€ x ${product.quantity} (${product.weight} ${product.unit})
+        <span>${product.name}</span>: ${product.price}€ x ${product.quantity} (${product.weight})
       `
       summaryContainer.appendChild(productDiv)
     })

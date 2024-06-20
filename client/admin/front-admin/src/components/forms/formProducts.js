@@ -1,27 +1,33 @@
-import { store } from '../redux/store.js'
-import { removeImages, showImages } from '../redux/images-slice.js'
+import { store } from '../../redux/store.js'
 
 class Form extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
   }
 
-  connectedCallback () {
+  connectedCallback() {
     document.addEventListener('showElement', this.handleShowElement.bind(this))
     // document.addEventListener('delete-tab', this.handleDeleteRecord.bind(this))
-    this.render()
+
+    this.loadData().then(() => this.render())
   }
 
-  handleShowElement (event) {
+  handleShowElement(event) {
     this.showElement(event.detail.element)
+  }
+
+  async loadData() {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/products-category`)
+    const data = await response.json()
+    this.categories = data.rows
   }
 
   // handleDeleteRecord (event) {
   //   this.deleteRecord(event.detail.id)
   // }
 
-  render () {
+  render() {
     this.shadow.innerHTML =
       /* html */
       `
@@ -93,7 +99,6 @@ p {
     display: flex;
     height: 100%;
     width: 100%;
-
 }
 
 .tab{
@@ -213,6 +218,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 select {
   cursor: pointer;
+  background-color: #718be0; /* Fondo del select */
+  color: #000000; /* Color del texto */
+  padding: 0.5rem;
+  border: none;
+  font-size: 1rem;
+}
+
+select option {
+  background-color: #ffffff; /* Fondo de las opciones */
+  color: #000000; /* Color del texto de las opciones */
 }
 
 .errors-modal{
@@ -237,191 +252,195 @@ ul{
   padding:0;
 }
 
+/* Estilos específicos para el checkbox */
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    appearance: none;
+    background-color: #718be0;
+    border: 2px solid #000;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+}
 
+input[type="checkbox"]:checked {
+    background-color: #e69428;
+    border: 2px solid #000;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+}
 
 
         </style>
 <div class="form">
-  <form class="faq-form">
-    <div class="form-top-bar">
-      <div class="tabs">
+<form class="base-form">
+<div class="form-top-bar">
+    <div class="tabs">
         <div class="tab active" data-tab="general">
             General
         </div>
-        <div class="tab" data-tab="images">
-            Imágenes
-        </div>
-      </div>
-      <div class="form-buttons">
-        <div class="create-button"  data-endpoint="">
-          <button>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>broom</title><path d="M19.36,2.72L20.78,4.14L15.06,9.85C16.13,11.39 16.28,13.24 15.38,14.44L9.06,8.12C10.26,7.22 12.11,7.37 13.65,8.44L19.36,2.72M5.93,17.57C3.92,15.56 2.69,13.16 2.35,10.92L7.23,8.83L14.67,16.27L12.58,21.15C10.34,20.81 7.94,19.58 5.93,17.57Z" /></svg>
-          </button>
+    </div>
+    <div class="form-buttons">
+        <div class="create-button" data-endpoint="">
+            <button>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>broom</title>
+                    <path d="M19.36,2.72L20.78,4.14L15.06,9.85C16.13,11.39 16.28,13.24 15.38,14.44L9.06,8.12C10.26,7.22 12.11,7.37 13.65,8.44L19.36,2.72M5.93,17.57C3.92,15.56 2.69,13.16 2.35,10.92L7.23,8.83L14.67,16.27L12.58,21.15C10.34,20.81 7.94,19.58 5.93,17.57Z"/>
+                </svg>
+            </button>
         </div>
         <div class="store-button" data-endpoint="">
-          <button>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>content-save</title><path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>
-          </button>
+            <button>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>content-save</title>
+                    <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+                </svg>
+            </button>
         </div>
-      </div>
     </div>
+</div>
 
+<div class="errors-modal">
+    <div class="errors-modal-title">Errores</div>
+    <ul></ul>
+</div>
 
+<input type="hidden" name="id" value="">
 
-    <div class="errors-modal">
-    <div class=errors-modal-title> Errores</div>
-      <ul>
-      </ul>
-    </div>
-  
-    <input type="hidden" name="id" value="">
-    <div class="tab-contents">
-      <div class="tab-content active" data-tab="general">
+<div class="tab-contents">
+    <div class="tab-content active" data-tab="general">
         <div class="form-row">
-          <div class="form-element">
-            <div class="form-element-label">
-              <label for="title">
-                Nombre
-              </label>
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Categoria</label>
+                </div>
+                <select name="productCategoryId">
+                    <option value="-1" selected disabled>--------------</option>
+                </select>
             </div>
-            <div class="form-element-input">
-              <input type="text" name="name" value="">
-            </div>
-          </div>
-      </div>
-
-
-        <div class="form-language-bar">
-          <div class="tabs">
-  
-              <div class="tab active" data-tab="es">
-                  ES
-              </div>
-              <div class="tab" data-tab="en">
-                  EN
-              </div>
-  
-          </div>
         </div>
-  
-  
-          <div class="tab-contents">
-            <div class="tab-content active" data-tab="es">
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="title">
-                      Pregunta
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <input type="text" name="locales.es.question" value="">
-                  </div>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="description">
-                      Respuesta
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <textarea name="locales.es.answer" type="textarea" class="event-description" data-onlyletters="true"></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-content" data-tab="en">
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="title">
-                      Question
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <input type="text" name="locales.en.question" value="">
-                  </div>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-element">
-                  <div class="form-element-label">
-                    <label for="description">
-                      Answer
-                    </label>
-                  </div>
-                  <div class="form-element-input">
-                    <textarea name="locales.en.answer" type="textarea" class="event-description" data-onlyletters="true"></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-      </div>
 
-      <!-- image Gallery -->
-      <div class="tab-content" data-tab="images">
-      <upload-image-component name="featureImage" image-configuration='{
-        "xs": {
-          "widthPx": "60",
-          "heightPx": "60"
-        },
-        "sm": {
-          "widthPx": "120",
-          "heightPx": "120"
-        },
-        "md": {
-          "widthPx": "240",
-          "heightPx": "240"
-        },
-        "lg": {
-          "widthPx": "480",
-          "heightPx": "480"
-        }
-      }' type="single"> </upload-image-component>
-      <upload-image-component name="feature-imag" image-configuration='{
-        "xs": {
-          "widthPx": "60",
-          "heightPx": "60"
-        },
-        "sm": {
-          "widthPx": "120",
-          "heightPx": "120"
-        },
-        "md": {
-          "widthPx": "240",
-          "heightPx": "240"
-        },
-        "lg": {
-          "widthPx": "480",
-          "heightPx": "480"
-        }
-      }' type="multiple"> </upload-image-component>
-      </div>
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Nombre</label>
+                </div>
+                <div class="form-element-input">
+                    <input type="text" name="name" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Referencia</label>
+                </div>
+                <div class="form-element-input">
+                    <input type="text" name="reference" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Unidades</label>
+                </div>
+                <div class="form-element-input">
+                    <input type="text" name="units" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Ud. Medida</label>
+                </div>
+                <div class="form-element-input">
+                    <input type="text" name="measurementUnit" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Medida</label>
+                </div>
+                <div class="form-element-input">
+                    <input type="text" name="measurement" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-element">
+                <div class="form-element-label">
+                    <label for="title">Visible</label>
+                </div>
+                <div class="form-field checkbox">
+                  <input type="checkbox" name="visible">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+        <div class="form-element">
+            <div class="form-element-label">
+                <label for="title">Precio</label>
+            </div>
+              <div class="form-element-input">
+                  <input type="number" name="price.basePrice" value="">
+              </div>
+            </div>
+        </div>
+
+
     </div>
-  </form>
+</div>
+</form>
 </div>
 
 
         `
+    const categoriesSelect = this.shadow.querySelector('[name="productCategoryId"]')
+    this.categories.forEach(category => {
+      const option = document.createElement('option')
+      option.value = category.id
+      option.innerHTML = category.name
+      categoriesSelect.appendChild(option)
+    })
 
     const main = this.shadow.querySelector('.form')
 
     main?.addEventListener('click', async (event) => {
-      event.preventDefault()
+      // event.preventDefault()
       if (event.target.closest('.errors-modal')) {
         const modalError = this.shadow.querySelector('.errors-modal')
         modalError.classList.remove('active')// Ocultar el modal al hacer clic en el botón de cierre
       }
       // Si el evento se origina dentro del botón de guardar
       if (event.target.closest('.store-button')) {
-        const form = this.shadow.querySelector('.faq-form')
+        event.preventDefault()
+        const form = this.shadow.querySelector('.base-form')
         const formData = new FormData(form)
+        formData.set("visible", this.shadow.querySelector('[name="visible"]').checked)
 
         const formDataJson = {}
-        formDataJson.images = store.getState().images.selectedImages
 
         for (const [key, value] of formData.entries()) {
           if (key.includes('locales')) {
@@ -450,6 +469,7 @@ ul{
         }
 
         const endpoint = formDataJson.id ? `${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}/${formDataJson.id}` : `${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`
+        console.log(endpoint)
         const method = formDataJson.id ? 'PUT' : 'POST'
         delete formDataJson.id
 
@@ -496,7 +516,6 @@ ul{
         }
 
         document.dispatchEvent(new CustomEvent('refresh-table-records'))
-        store.dispatch(removeImages())
         this.render()
       }
 
@@ -510,8 +529,6 @@ ul{
             color: 'red'
           }
         })
-        // TODO limpiar imagenes
-        store.dispatch(removeImages())
         document.dispatchEvent(broomNotificationEvent)
       }
 
@@ -534,22 +551,20 @@ ul{
     })
   }
 
-  showElement (element, parentKey = '') {
+  showElement(element, parentKey = '') {
     // console.log(element)
     Object.entries(element).forEach(([key, value]) => {
       const currentKey = parentKey ? `${parentKey}.${key}` : key
       if (typeof value === 'object' && value !== null && currentKey.includes('locales')) {
         this.showElement(value, currentKey)
       }
-      if (typeof value === 'object' && value !== null && currentKey.includes('images')) {
-        store.dispatch(showImages(value))
-      } else {
+      else {
         this.paintRecord(value, currentKey)
       }
     })
   }
 
-  paintRecord (value, currentKey) {
+  paintRecord(value, currentKey) {
     try {
       // console.log(currentKey)
       const input = this.shadow.querySelector(`input[name="${currentKey}"]`)
@@ -569,9 +584,9 @@ ul{
     }
   }
 
-  deleteRecord (id) {
+  deleteRecord(id) {
     alert(id)
   }
 }
 
-customElements.define('form-component', Form)
+customElements.define('form-component-products', Form)

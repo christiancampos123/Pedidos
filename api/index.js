@@ -40,7 +40,8 @@ app.use(session({
 }))
 
 const corsOptions = {
-  origin: [process.env.API_URL]
+  origin: [process.env.API_URL],
+  credentials: true
 }
 
 app.use(cors(corsOptions))
