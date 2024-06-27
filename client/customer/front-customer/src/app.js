@@ -6,6 +6,7 @@ import './components/products.js'
 import './components/summary.js'
 import './components/previousOrders'
 import './components/success.js'
+import './components/summaryReturn.js'
 // import './components/font-loader-component.js'
 
 // import './components/modalErrors.js'

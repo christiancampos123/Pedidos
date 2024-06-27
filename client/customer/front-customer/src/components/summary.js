@@ -3,13 +3,13 @@ import { store } from '../redux/store.js'
 import { updateCart } from './../redux/cart-slice'
 
 class ProductSummaryComponent extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
     this.products = []
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this.unsubscribe = store.subscribe(() => {
       const currentState = store.getState()
 
@@ -27,7 +27,7 @@ class ProductSummaryComponent extends HTMLElement {
     this.render()
   }
 
-  updateCart (products) {
+  updateCart(products) {
     const summaryContainer = this.shadow.querySelector('.summary')
 
     // Clear previous content
@@ -55,11 +55,11 @@ class ProductSummaryComponent extends HTMLElement {
     // Total element
     const totalElement = document.createElement('div')
     totalElement.className = 'total'
-    totalElement.textContent = `Total: ${total}€`
+    totalElement.textContent = `Total: ${total.toFixed(2)}€`
     summaryContainer.appendChild(totalElement)
   }
 
-  render () {
+  render() {
     // Clear previous content
     this.shadow.innerHTML = `
       <style>
@@ -161,6 +161,7 @@ class ProductSummaryComponent extends HTMLElement {
       </style>
     `
 
+
     // Contenedor del botón de flecha
     const arrowButtonContainer = document.createElement('div')
     arrowButtonContainer.className = 'arrow-button-container hide'
@@ -193,9 +194,44 @@ class ProductSummaryComponent extends HTMLElement {
     this.shadow.appendChild(doOrderButton)
 
     const doOrder = this.shadow.querySelector('.do-order-button')
-    doOrder.addEventListener('click', () => {
-      window.location.href = '/cliente/pedidoexitoso'
-    })
+    doOrder.addEventListener('click', async () => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/customer/sales`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken')
+        },
+        body: JSON.stringify({
+          products: this.products
+        })
+      });
+
+      const data = await response.json();
+      const summary = this.shadow.querySelector(".summary");
+      summary.innerHTML = '';
+
+      const messageC = document.createElement('div');
+      messageC.classList.add("messageC");
+      summary.appendChild(messageC);
+
+      const title = document.createElement("h2");
+      title.textContent = `TITULO ${data.reference}`;
+      messageC.appendChild(title);
+
+      const link = document.createElement("a");
+      link.href = '/cliente';
+
+      const buttonHome = document.createElement("button");
+      buttonHome.textContent = 'Ir a Home';
+      link.appendChild(buttonHome);
+
+      messageC.appendChild(link);
+
+      doOrder.classList.add("hide");
+
+      // window.location.href = '/cliente/pedidoexitoso' // Uncomment this if you want to redirect immediately
+    });
+
 
     const viewOrder = this.shadow.querySelector('.view-order-button')
     viewOrder.addEventListener('click', () => {
@@ -217,7 +253,7 @@ class ProductSummaryComponent extends HTMLElement {
     })
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (this.unsubscribe) {
       this.unsubscribe()
     }

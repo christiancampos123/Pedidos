@@ -1,36 +1,36 @@
 class PreviousOrdersComponent extends HTMLElement {
-  constructor () {
-    super()
-    this.shadow = this.attachShadow({ mode: 'open' })
+  constructor() {
+    super();
+    this.shadow = this.attachShadow({ mode: 'open' });
     // Datos de ejemplo para pedidos anteriores
-    this.previousOrders = [
-      { reference: '1234', price: 50, date: '2024-06-01T10:30:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '5678', price: 75, date: '2024-05-28T15:45:00' },
-      { reference: '91011', price: 30, date: '2024-05-25T12:00:00' }
-    ]
+    this.previousOrders = [];
+    // Copia de los pedidos originales sin filtrar
+    this.filteredOrders = [];
   }
 
-  connectedCallback () {
-    this.render()
+  connectedCallback() {
+    document.addEventListener('go-products2', () => {
+      this.shadow.querySelector('.container').classList.remove('invisible');
+    });
+    this.loadData().then(() => this.render());
   }
 
-  render () {
+  async loadData() {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`);
+    const data = await response.json();
+    this.previousOrders = data.rows;
+    this.filteredOrders = [...this.previousOrders]; // Inicialmente, los pedidos sin filtrar son los mismos que los pedidos anteriores
+  }
+
+  render() {
     // Estilos CSS
-    const style = document.createElement('style')
+    const style = document.createElement('style');
     style.textContent = `
       .container {
         width: 90%;
-        max-width: 600px;
         margin: 5rem auto;
+        transition: transform 0.3s ease-out;
+        transform: translateX(0%);
       }
 
       .search-input {
@@ -88,81 +88,127 @@ class PreviousOrdersComponent extends HTMLElement {
         border-radius: 5px;
         cursor: pointer;
       }
-    `
-    this.shadow.appendChild(style)
+
+      .invisible {
+        transform: translateX(-120%);
+      }
+    `;
+    this.shadow.appendChild(style);
 
     // Contenedor principal
-    const container = document.createElement('div')
-    container.classList.add('container')
-    this.shadow.appendChild(container)
+    const container = document.createElement('div');
+    container.classList.add('container');
+    this.shadow.appendChild(container);
 
     // Campo de texto para buscar por referencia
-    const referenceInput = document.createElement('input')
-    referenceInput.classList.add('search-input')
-    referenceInput.placeholder = 'Buscar por referencia'
-    container.appendChild(referenceInput)
+    const referenceInput = document.createElement('input');
+    referenceInput.classList.add('search-input');
+    referenceInput.placeholder = 'Buscar por referencia';
+    container.appendChild(referenceInput);
 
     // Botón de búsqueda por referencia
-    const referenceButton = document.createElement('button')
-    referenceButton.classList.add('search-button')
-    referenceButton.textContent = 'Buscar'
-    container.appendChild(referenceButton)
+    const referenceButton = document.createElement('button');
+    referenceButton.classList.add('search-button');
+    referenceButton.textContent = 'Buscar';
+    container.appendChild(referenceButton);
 
     // Campo de texto para buscar por fecha
-    const dateInput = document.createElement('input')
-    dateInput.classList.add('search-input')
-    dateInput.type = 'date'
-    container.appendChild(dateInput)
+    const dateInput = document.createElement('input');
+    dateInput.classList.add('search-input');
+    dateInput.type = 'text'; // Cambiar a tipo texto para aceptar formato dd/mm/yyyy
+    dateInput.placeholder = 'Buscar por fecha (dd/mm/yyyy)';
+    container.appendChild(dateInput);
 
     // Botón de búsqueda por fecha
-    const dateButton = document.createElement('button')
-    dateButton.classList.add('search-button')
-    dateButton.textContent = 'Buscar'
-    container.appendChild(dateButton)
+    const dateButton = document.createElement('button');
+    dateButton.classList.add('search-button');
+    dateButton.textContent = 'Buscar';
+    container.appendChild(dateButton);
 
     // Lista de pedidos anteriores
-    const ordersList = document.createElement('div')
-    ordersList.classList.add('orders-list')
-    container.appendChild(ordersList)
+    const ordersList = document.createElement('div');
+    ordersList.classList.add('orders-list');
+    container.appendChild(ordersList);
 
-    // Mostrar pedidos anteriores
-    this.previousOrders.forEach(order => {
-      const orderItem = document.createElement('div')
-      orderItem.classList.add('order-item')
+    // Función para filtrar y renderizar pedidos
+    const filterAndRenderOrders = () => {
+      const referenceValue = referenceInput.value.trim().toLowerCase();
+      const dateValue = dateInput.value.trim();
 
-      const orderInfo = document.createElement('div')
-      orderInfo.classList.add('order-info')
+      // Filtrar los pedidos basados en la referencia y/o fecha
+      this.filteredOrders = this.previousOrders.filter(order => {
+        const matchesReference = order.reference.toLowerCase().includes(referenceValue);
+        const matchesDate = dateValue === '' || this.formatDate(order.saleDate) === dateValue; // Comparar la fecha formateada
+        return matchesReference && matchesDate;
+      });
 
-      const orderReference = document.createElement('div')
-      orderReference.classList.add('order-reference')
-      orderReference.textContent = `Referencia: ${order.reference}`
-      orderInfo.appendChild(orderReference)
+      // Limpiar la lista actual
+      ordersList.innerHTML = '';
 
-      const orderPrice = document.createElement('div')
-      orderPrice.textContent = `Precio: ${order.price}€`
-      orderInfo.appendChild(orderPrice)
+      // Mostrar pedidos filtrados
+      this.filteredOrders.forEach(order => {
+        const orderItem = document.createElement('div');
+        orderItem.classList.add('order-item');
 
-      const orderDate = document.createElement('div')
-      orderDate.classList.add('order-date')
-      const formattedDate = new Date(order.date).toLocaleString()
-      orderDate.textContent = `Fecha: ${formattedDate}`
-      orderInfo.appendChild(orderDate)
+        const orderInfo = document.createElement('div');
+        orderInfo.classList.add('order-info');
 
-      const viewButton = document.createElement('button')
-      viewButton.classList.add('view-button')
-      viewButton.textContent = 'Ver Pedido'
-      viewButton.addEventListener('click', () => {
-        // Lógica para ver el pedido
-        alert(`Ver pedido ${order.reference}`)
+        const orderReference = document.createElement('div');
+        orderReference.classList.add('order-reference');
+        orderReference.textContent = `Referencia: ${order.reference}`;
+        orderInfo.appendChild(orderReference);
 
-        window.location.href = '/cliente/resumen'
-      })
+        const orderPrice = document.createElement('div');
+        orderPrice.textContent = `Precio: ${order.totalBasePrice}€`;
+        orderInfo.appendChild(orderPrice);
 
-      orderItem.appendChild(orderInfo)
-      orderItem.appendChild(viewButton)
-      ordersList.appendChild(orderItem)
-    })
+        const orderDate = document.createElement('div');
+        orderDate.classList.add('order-date');
+        orderDate.textContent = `Fecha: ${order.saleDate}  ${order.saleTime}`;
+        orderInfo.appendChild(orderDate);
+
+        const viewButton = document.createElement('button');
+        viewButton.classList.add('view-button');
+        viewButton.setAttribute('data-id', order.id);
+        viewButton.textContent = 'Ver Pedido';
+        viewButton.addEventListener('click', () => {
+          const container = this.shadow.querySelector(".container");
+          container.classList.add("invisible");
+
+          const event = new CustomEvent('go-summary2', {
+            detail: {
+              orderId: order.id
+            }
+          });
+          document.dispatchEvent(event);
+        });
+
+        orderItem.appendChild(orderInfo);
+        orderItem.appendChild(viewButton);
+        ordersList.appendChild(orderItem);
+      });
+
+      // Si no se encontraron resultados
+      if (this.filteredOrders.length === 0) {
+        const noResultsMessage = document.createElement('div');
+        noResultsMessage.textContent = 'No se encontraron pedidos con los criterios de búsqueda seleccionados.';
+        ordersList.appendChild(noResultsMessage);
+      }
+    };
+
+    // Eventos de búsqueda
+    referenceButton.addEventListener('click', filterAndRenderOrders);
+    dateButton.addEventListener('click', filterAndRenderOrders);
+
+    // Renderizar los pedidos sin ningún filtro inicial
+    filterAndRenderOrders();
+  }
+
+  // Función para formatear la fecha de yyyy-mm-dd a dd/mm/yyyy
+  formatDate(dateString) {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
   }
 }
 
-customElements.define('previous-orders-component', PreviousOrdersComponent)
+customElements.define('previous-orders-component', PreviousOrdersComponent);
