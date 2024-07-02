@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const Sale = sequelize.define('Sale',
+  const SaleReturn = sequelize.define('SaleReturn',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -7,8 +7,13 @@ module.exports = function (sequelize, DataTypes) {
         primaryKey: true,
         allowNull: false
       },
+      saleId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
       customerId: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: false
       },
       reference: {
         type: DataTypes.STRING,
@@ -18,11 +23,11 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
       },
-      saleDate: {
+      returnDate: {
         type: DataTypes.DATEONLY,
         allowNull: false
       },
-      saleTime: {
+      returnTime: {
         type: DataTypes.TIME,
         allowNull: false
       },
@@ -44,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     }, {
       sequelize,
-      tableName: 'sales',
+      tableName: 'sale_returns',
       timestamps: true,
       paranoid: true,
       indexes: [
@@ -57,7 +62,14 @@ module.exports = function (sequelize, DataTypes) {
           ]
         },
         {
-          name: 'sales_customerId_fk',
+          name: 'sale_returns_saleId_fk',
+          using: 'BTREE',
+          fields: [
+            { name: 'saleId' }
+          ]
+        },
+        {
+          name: 'sale_returns_customerId_fk',
           using: 'BTREE',
           fields: [
             { name: 'customerId' }
@@ -67,13 +79,10 @@ module.exports = function (sequelize, DataTypes) {
     }
   )
 
-  Sale.associate = function (models) {
-    Sale.belongsTo(models.Customer, { as: 'customer', foreignKey: 'customerId' })
-    Sale.hasMany(models.SaleDetail, { as: 'saleDetails', foreignKey: 'saleId' })
-    Sale.belongsToMany(models.Product, { through: models.SaleDetail, as: 'products', foreignKey: 'saleId' })
-    Sale.hasMany(models.SaleReturn, { as: 'saleReturns', foreignKey: 'saleId' }) // Added line
-
+  SaleReturn.associate = function (models) {
+    SaleReturn.belongsTo(models.Sale, { as: 'sale', foreignKey: 'saleId' })
+    SaleReturn.belongsTo(models.Customer, { as: 'customer', foreignKey: 'customerId' })
   }
 
-  return Sale
+  return SaleReturn
 }

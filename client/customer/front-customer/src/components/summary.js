@@ -194,6 +194,7 @@ class ProductSummaryComponent extends HTMLElement {
     this.shadow.appendChild(doOrderButton)
 
     const doOrder = this.shadow.querySelector('.do-order-button')
+    console.log(this.products)
     doOrder.addEventListener('click', async () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/customer/sales`, {
         method: 'POST',

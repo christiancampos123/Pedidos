@@ -6,14 +6,15 @@ class ProductSummaryComponent extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.previousOrders = [];
+    this.currentSaleId = null;
+    this.customerId = null;
+    this.totalBasePrice = 0;
+    this.reference = null;
   }
 
   connectedCallback() {
     this.unsubscribe = store.subscribe(() => {
       const currentState = store.getState();
-
-      // Aquí puedes decidir si necesitas mantener alguna lógica con currentState.cart.cartProducts,
-      // pero para mostrar solo previousOrders, no es necesario comparar con productos actuales.
     });
 
     document.addEventListener('go-summary2', (event) => {
@@ -29,24 +30,23 @@ class ProductSummaryComponent extends HTMLElement {
     const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}?id=${id}`);
     const data = await response.json();
     this.previousOrders = data.rows;
-
-    // Actualiza la interfaz de usuario con los nuevos datos de pedidos anteriores
+    this.currentSaleId = id;
+    // Assuming the response contains the customerId and reference
+    this.customerId = data.customerId;
+    this.reference = data.reference;
+    this.totalBasePrice = this.previousOrders.reduce((total, order) => total + order.basePrice * order.quantity, 0);
     this.updatePreviousOrders(this.previousOrders);
   }
 
   updatePreviousOrders(previousOrders = []) {
     const summaryContainer = this.shadow.querySelector('.summary');
-
-    // Clear previous content
     summaryContainer.innerHTML = '';
 
-    // Title
     const summaryTitle = document.createElement('div');
     summaryTitle.className = 'summary-title';
     summaryTitle.textContent = 'Pedidos Anteriores';
     summaryContainer.appendChild(summaryTitle);
 
-    // Previous orders
     previousOrders.forEach(order => {
       const orderDiv = document.createElement('div');
       orderDiv.className = 'previous-order-item';
@@ -56,14 +56,46 @@ class ProductSummaryComponent extends HTMLElement {
       summaryContainer.appendChild(orderDiv);
     });
 
-    // Si deseas calcular algún total u otro tipo de información específica de los pedidos anteriores,
-    // puedes agregar esa lógica aquí.
+    const returnButton = document.createElement('button');
+    returnButton.className = 'return-button';
+    returnButton.textContent = 'Procesar Devolución Completa';
+    returnButton.addEventListener('click', () => this.processReturn());
+    summaryContainer.appendChild(returnButton);
+  }
 
-    // Opcionalmente, puedes ocultar/mostrar botones u otros elementos según la cantidad de pedidos anteriores.
+  async processReturn() {
+    const saleReturn = {
+      saleId: this.currentSaleId,
+      // customerId: this.customerId,
+      // reference: this.reference,
+      totalBasePrice: this.totalBasePrice.toFixed(2),
+      returnDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+      returnTime: new Date().toISOString().split('T')[1].split('.')[0] // Current time in HH:MM:SS format
+    }
+    console.log("saleReturn:" + saleReturn.totalBasePrice)
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpointReturn')}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(saleReturn)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('Devolución procesada exitosamente');
+      } else {
+        throw new Error('Error al procesar la devolución');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Hubo un error al procesar la devolución');
+    }
   }
 
   render() {
-    // Clear previous content
     this.shadow.innerHTML = `
       <style>
         .summary {
@@ -89,12 +121,23 @@ class ProductSummaryComponent extends HTMLElement {
         .previous-order-item {
           margin-bottom: 10px;
         }
+        .return-button {
+          margin-top: 10px;
+          padding: 10px;
+          background-color: #28a745;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        .return-button:hover {
+          background-color: #218838;
+        }
         .total {
           margin-top: 20px;
           font-size: 1.25rem;
           font-weight: bold;
         }
-
         .view-order-button {
           z-index: 10;
           position: fixed;
@@ -146,23 +189,19 @@ class ProductSummaryComponent extends HTMLElement {
       </style>
     `;
 
-    // Contenedor del botón de flecha
     const arrowButtonContainer = document.createElement('div');
     arrowButtonContainer.className = 'arrow-button-container hide';
     this.shadow.appendChild(arrowButtonContainer);
 
-    // Botón de flecha
     const arrowButton = document.createElement('button');
     arrowButton.className = 'arrow-button';
     arrowButton.innerHTML = '<span>&#x25C0;</span>';
     arrowButtonContainer.appendChild(arrowButton);
 
-    // Summary container
     const summaryContainer = document.createElement('div');
     summaryContainer.className = 'summary';
     this.shadow.appendChild(summaryContainer);
 
-    // Inicializar el contenido de los pedidos anteriores
     this.updatePreviousOrders(this.previousOrders);
 
     arrowButton.addEventListener('click', () => {

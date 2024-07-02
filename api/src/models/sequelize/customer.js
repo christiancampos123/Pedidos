@@ -250,6 +250,8 @@ module.exports = function (sequelize, DataTypes) {
 
     // Customer.belongsToMany(models.Email, { through: models.SentEmail, as: 'emails', foreignKey: 'customerId' })
     Customer.hasOne(models.CustomerCredential, { as: 'customerCredential', foreignKey: 'customerId' })
+    Customer.hasMany(models.SaleReturn, { as: 'saleReturns', foreignKey: 'customerId' })
+
     Customer.hasMany(models.CustomerActivationToken, { as: 'customerActivationTokens', foreignKey: 'customerId' })
     Customer.hasOne(models.CustomerActivationToken, { as: 'customerActivationToken', foreignKey: 'customerId', scope: { used: false } })
     Customer.hasMany(models.CustomerResetPasswordToken, { as: 'customerResetPasswordTokens', foreignKey: 'customerId' })
