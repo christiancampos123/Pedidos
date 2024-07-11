@@ -1,43 +1,57 @@
 class PageComponent extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
     this.attachShadow({ mode: 'open' })
     this.basePath = this.getAttribute('base-path') || ''
   }
 
-  connectedCallback () {
-    this.render()
+  async connectedCallback() {
+    await this.getRoutes()
+    await this.render()
+    window.onpopstate = () => this.handleRouteChange()
+  }
 
-    window.onpopstate = () => {
-      this.handleRouteChange()
+  async getRoutes() {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/customer/routes`, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
+      },
+    })
+
+    if (response.ok) {
+      this.routes = await response.json()
+    } else {
+      const data = await response.json()
+
+      if (data.redirection) {
+        window.location.href = data.redirection
+      }
     }
   }
 
-  handleRouteChange () {
+  handleRouteChange() {
     this.render()
   }
 
-  render () {
+  render() {
     const path = window.location.pathname
     this.getTemplate(path)
   }
 
-  async getTemplate (path) {
-    const routes = {
-      '/cliente': 'home.html',
-      '/cliente/pedidos': 'pedidos.html',
-      '/cliente/resumen': 'resumen.html',
-      '/cliente/pedidoexitoso': 'exito.html',
-      '/cliente/pedidosanteriores': 'pedidosAnteriores.html'
-    }
+  async getTemplate(path) {
 
-    const filename = routes[path] || '404.html'
+
+    const filename = this.routes[path] || '404.html'
 
     await this.loadPage(filename)
   }
 
-  async loadPage (filename) {
-    const response = await fetch(`${this.basePath}/pages/${filename}`)
+  async loadPage(filename) {
+    const response = await fetch(`${this.basePath}/pages/${filename}`, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
+      },
+    })
     const html = await response.text()
 
     document.startViewTransition(() => {

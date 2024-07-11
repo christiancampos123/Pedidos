@@ -1,4 +1,5 @@
 const sequelizeDb = require('../../models/sequelize')
+const neo4jDb = require('../../models/neo4j')
 const Product = sequelizeDb.Product
 const Op = sequelizeDb.Sequelize.Op
 const PriceManagementService = require('../../services/price-management-service.js')

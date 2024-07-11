@@ -1,8 +1,10 @@
 const bcrypt = require('bcryptjs')
 const sequelizeDb = require('../../models/sequelize')
+const jwt = require('jsonwebtoken')
 const CustomerCredential = sequelizeDb.CustomerCredential
 
 exports.signin = async (req, res) => {
+  console.log("entro signin")
   try {
     if (!req.body.email || !req.body.password) {
       return res.status(400).send({ message: 'Los campos no pueden estar vacios.' })
@@ -20,24 +22,34 @@ exports.signin = async (req, res) => {
     })
 
     if (!data) {
-      return res.status(404).send({ message: 'Usuario o contraseña incorrecta' })
+      return res.status(404).send({ message: 'Usuario o contraseña incorrectaa' })
     }
+
+    console.log("pass", req.body.password)
 
     const passwordIsValid = bcrypt.compareSync(
       req.body.password,
       data.password
     )
 
+    // si peta coment
     if (!passwordIsValid) {
       return res.status(404).send({
         message: 'Usuario o contraseña incorrecta'
       })
     }
 
-    req.session.Customer = { id: data.id, admin: true }
+    // req.session.Customer = { id: data.id, admin: true }
+
+    // const customer = await CustomerStaff.findByPk(customerStaffCredential.customerStaffId)
+
+    const token = jwt.sign({ customerId: data.customerId, type: 'customer' }, process.env.JWT_SECRET, {
+      expiresIn: 86400
+    })
 
     res.status(200).send({
-      redirection: '/admin'
+      customerAccessToken: token,
+      redirection: '/cliente'
     })
   } catch (err) {
     console.log(err)
@@ -48,11 +60,11 @@ exports.signin = async (req, res) => {
 exports.checkSignin = (req, res) => {
   if (req.session.Customer) {
     res.status(200).send({
-      redirection: '/admin'
+      redirection: '/cliente'
     })
   } else {
     res.status(401).send({
-      redirection: '/admin/login'
+      redirection: '/cliente/login'
     })
   }
 }

@@ -10,6 +10,7 @@ class ProductSummaryComponent extends HTMLElement {
     this.customerId = null;
     this.totalBasePrice = 0;
     this.reference = null;
+    this.saleReturnExists = false;
   }
 
   connectedCallback() {
@@ -27,71 +28,85 @@ class ProductSummaryComponent extends HTMLElement {
   }
 
   async loadData(id) {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}?id=${id}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}?id=${id}`, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
+      },
+    })
     const data = await response.json();
     this.previousOrders = data.rows;
     this.currentSaleId = id;
-    // Assuming the response contains the customerId and reference
-    this.customerId = data.customerId;
-    this.reference = data.reference;
+    this.saleReturnExists = data.saleReturnExists;
     this.totalBasePrice = this.previousOrders.reduce((total, order) => total + order.basePrice * order.quantity, 0);
     this.updatePreviousOrders(this.previousOrders);
   }
 
   updatePreviousOrders(previousOrders = []) {
-    const summaryContainer = this.shadow.querySelector('.summary');
-    summaryContainer.innerHTML = '';
+    const summaryContainer = this.shadow.querySelector('.summary')
+    summaryContainer.innerHTML = ''
 
-    const summaryTitle = document.createElement('div');
-    summaryTitle.className = 'summary-title';
-    summaryTitle.textContent = 'Pedidos Anteriores';
-    summaryContainer.appendChild(summaryTitle);
+    const summaryTitle = document.createElement('div')
+    summaryTitle.className = 'summary-title'
+    summaryTitle.textContent = 'Pedidos Anteriores'
+    summaryContainer.appendChild(summaryTitle)
 
     previousOrders.forEach(order => {
-      const orderDiv = document.createElement('div');
-      orderDiv.className = 'previous-order-item';
+      const orderDiv = document.createElement('div')
+      orderDiv.className = 'previous-order-item'
       orderDiv.innerHTML = `
         <span>${order.productName}</span>: ${order.basePrice}€ (Fecha: ${order.createdAt}) - Cantidad: ${order.quantity}
       `;
-      summaryContainer.appendChild(orderDiv);
+      summaryContainer.appendChild(orderDiv)
     });
 
-    const returnButton = document.createElement('button');
-    returnButton.className = 'return-button';
-    returnButton.textContent = 'Procesar Devolución Completa';
-    returnButton.addEventListener('click', () => this.processReturn());
-    summaryContainer.appendChild(returnButton);
+    if (this.saleReturnExists) {
+      const returnMessage = document.createElement('div')
+      returnMessage.className = 'return-message'
+      returnMessage.textContent = 'Este pedido ha sido devuelto.'
+      summaryContainer.appendChild(returnMessage)
+    } else {
+      const returnButton = document.createElement('button')
+      returnButton.className = 'return-button'
+      returnButton.textContent = 'Procesar Devolución Completa'
+      returnButton.addEventListener('click', () => this.processReturn())
+      summaryContainer.appendChild(returnButton)
+    }
   }
+
 
   async processReturn() {
     const saleReturn = {
       saleId: this.currentSaleId,
-      // customerId: this.customerId,
-      // reference: this.reference,
       totalBasePrice: this.totalBasePrice.toFixed(2),
-      returnDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
-      returnTime: new Date().toISOString().split('T')[1].split('.')[0] // Current time in HH:MM:SS format
+      returnDate: new Date().toISOString().split('T')[0],
+      returnTime: new Date().toISOString().split('T')[1].split('.')[0]
     }
-    console.log("saleReturn:" + saleReturn.totalBasePrice)
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpointReturn')}`, {
         method: 'POST',
         headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(saleReturn)
       });
 
       if (response.ok) {
-        const result = await response.json();
-        alert('Devolución procesada exitosamente');
+        const result = await response.json()
+        alert('Devolución procesada exitosamente')
+        this.shadow.querySelector('.arrow-button-container').classList.add('hide')
+        this.shadow.querySelector('.summary').classList.remove('visible')
+
+        const event = new CustomEvent('go-products2')
+        document.dispatchEvent(event)
+
       } else {
-        throw new Error('Error al procesar la devolución');
+        throw new Error('Error al procesar la devolución')
       }
     } catch (error) {
-      console.error(error);
-      alert('Hubo un error al procesar la devolución');
+      console.error(error)
+      alert('Hubo un error al procesar la devolución')
     }
   }
 
@@ -119,6 +134,11 @@ class ProductSummaryComponent extends HTMLElement {
           margin-bottom: 10px;
         }
         .previous-order-item {
+          margin-bottom: 10px;
+        }
+        .return-message {
+          color: red;
+          font-weight: bold;
           margin-bottom: 10px;
         }
         .return-button {
@@ -189,35 +209,35 @@ class ProductSummaryComponent extends HTMLElement {
       </style>
     `;
 
-    const arrowButtonContainer = document.createElement('div');
-    arrowButtonContainer.className = 'arrow-button-container hide';
-    this.shadow.appendChild(arrowButtonContainer);
+    const arrowButtonContainer = document.createElement('div')
+    arrowButtonContainer.className = 'arrow-button-container hide'
+    this.shadow.appendChild(arrowButtonContainer)
 
-    const arrowButton = document.createElement('button');
-    arrowButton.className = 'arrow-button';
-    arrowButton.innerHTML = '<span>&#x25C0;</span>';
-    arrowButtonContainer.appendChild(arrowButton);
+    const arrowButton = document.createElement('button')
+    arrowButton.className = 'arrow-button'
+    arrowButton.innerHTML = '<span>&#x25C0;</span>'
+    arrowButtonContainer.appendChild(arrowButton)
 
-    const summaryContainer = document.createElement('div');
-    summaryContainer.className = 'summary';
-    this.shadow.appendChild(summaryContainer);
+    const summaryContainer = document.createElement('div')
+    summaryContainer.className = 'summary'
+    this.shadow.appendChild(summaryContainer)
 
-    this.updatePreviousOrders(this.previousOrders);
+    this.updatePreviousOrders(this.previousOrders)
 
     arrowButton.addEventListener('click', () => {
-      this.shadow.querySelector('.arrow-button-container').classList.add('hide');
-      this.shadow.querySelector('.summary').classList.remove('visible');
+      this.shadow.querySelector('.arrow-button-container').classList.add('hide')
+      this.shadow.querySelector('.summary').classList.remove('visible')
 
-      const event = new CustomEvent('go-products2');
-      document.dispatchEvent(event);
-    });
+      const event = new CustomEvent('go-products2')
+      document.dispatchEvent(event)
+    })
   }
 
   disconnectedCallback() {
     if (this.unsubscribe) {
-      this.unsubscribe();
+      this.unsubscribe()
     }
   }
 }
 
-customElements.define('summary-return-component', ProductSummaryComponent);
+customElements.define('summary-return-component', ProductSummaryComponent)

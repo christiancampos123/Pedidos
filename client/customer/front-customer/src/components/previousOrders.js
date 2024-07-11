@@ -16,7 +16,11 @@ class PreviousOrdersComponent extends HTMLElement {
   }
 
   async loadData() {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
+      },
+    })
     const data = await response.json();
     this.previousOrders = data.rows;
     this.filteredOrders = [...this.previousOrders]; // Inicialmente, los pedidos sin filtrar son los mismos que los pedidos anteriores

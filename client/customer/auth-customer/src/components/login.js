@@ -1,14 +1,14 @@
 class LoginComponent extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this.render()
   }
 
-  render () {
+  render() {
     this.shadow.innerHTML = `
       <style>
         /* Estilos del modal */
@@ -105,14 +105,14 @@ class LoginComponent extends HTMLElement {
     })
   }
 
-  async submitForm (form) {
+  async submitForm(form) {
     const endpoint = import.meta.env.VITE_API_URL
     const formData = new FormData(form)
     const formDataJson = Object.fromEntries(formData.entries())
     alert(JSON.stringify(formDataJson))
 
     try {
-      const result = await fetch(`${endpoint}/api/auth/user/signin`, {
+      const result = await fetch(`${endpoint}/api/auth/customer/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -122,6 +122,8 @@ class LoginComponent extends HTMLElement {
 
       if (result.ok) {
         const data = await result.json()
+        console.log(data)
+        localStorage.setItem("customerAccessToken", data.customerAccessToken)
         window.location.href = data.redirection
       } else {
         const error = await result.json()

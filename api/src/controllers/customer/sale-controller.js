@@ -3,6 +3,7 @@ const Product = sequelizeDb.Product;
 const Sale = sequelizeDb.Sale;
 const SaleDetail = sequelizeDb.SaleDetail;
 const Op = sequelizeDb.Sequelize.Op;
+const Customer = sequelizeDb.Customer;
 
 exports.findAll = (req, res) => {
   const page = req.query.page || 1;
@@ -107,7 +108,7 @@ exports.create = async (req, res) => {
     }
 
     const saleData = {
-      customerId: 1,
+      customerId: req.customerId,
       reference: newReference,
       totalBasePrice: parseFloat(totalBasePrice).toFixed(2),
       saleDate: currentDateString,
@@ -129,7 +130,22 @@ exports.create = async (req, res) => {
     });
 
     // Insertar cada detalle de venta individualmente
-    await SaleDetail.bulkCreate(saleDetailsData);
+    await SaleDetail.bulkCreate(saleDetailsData)
+
+    const customer = await Customer.findByPk(req.customerId)
+
+    const saleInfo = {
+      sale,
+      customer,
+      saleDetailsData
+    }
+
+    req.redisClient.publish('new-sale', JSON.stringify({
+      userId: req.customerId,
+      userType: 'customer',
+      template: 'order-details',
+      saleInfo
+    }))
 
     res.status(201).send(sale);
 

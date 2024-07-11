@@ -15,9 +15,14 @@ class ProductListComponent extends HTMLElement {
   }
 
   async loadData() {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}${this.getAttribute('endpoint')}`, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('customerAccessToken'),
+      },
+    })
     this.products = await response.json();
-    this.products = this.products.map(product => ({ ...product, quantity: 0 }));
+    this.products = this.products.map(product => ({ ...product, quantity: 0 }))
+    console.log(this.products)
   }
 
   render() {
@@ -203,7 +208,8 @@ class ProductListComponent extends HTMLElement {
               units: product.units,
               price: product.price.basePrice,  // Ajusta según la estructura de tu objeto de producto
               weight: `${product.measurement} ${product.measurementUnit}`,  // Igualmente, ajusta según tu estructura
-            }));          }
+            }));
+          }
         } else if (event.target.classList.contains('increase')) {
           product.quantity++
           const quantitySpan = productDiv.querySelector('.quantity-span')
@@ -216,7 +222,8 @@ class ProductListComponent extends HTMLElement {
             units: product.units,
             price: product.price.basePrice,  // Ajusta según la estructura de tu objeto de producto
             weight: `${product.measurement} ${product.measurementUnit}`,  // Igualmente, ajusta según tu estructura
-          }));        }
+          }));
+        }
       }
       console.log(store.getState())
     })
